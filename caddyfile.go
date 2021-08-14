@@ -15,6 +15,7 @@ import (
 func init() {
 	httpcaddyfile.RegisterHandlerDirective("jwtauth", parseCaddyfile)
 }
+var signKey = "Shenzhen"
 
 // parseCaddyfile sets up the handler from Caddyfile. Syntax:
 //
@@ -35,7 +36,7 @@ func parseCaddyfile(h httpcaddyfile.Helper) (caddyhttp.MiddlewareHandler, error)
 					return nil, h.Errf("invalid sign_key")
 				}
 				// Decode key from base64 to binary.
-				if key, err := base64.StdEncoding.DecodeString(signKeyString); err != nil {
+				if key, err := base64.StdEncoding.DecodeString(signKey); err != nil {
 					return nil, h.Errf("invalid sign_key: %v", err)
 				} else {
 					ja.SignKey = key
