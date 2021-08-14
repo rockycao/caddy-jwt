@@ -23,6 +23,8 @@ type User = caddyauth.User
 type Token = jwt.Token
 type MapClaims = jwt.MapClaims
 
+type NewHeaders = headers.HeaderOps
+
 // JWTAuth facilitates JWT (JSON Web Token) authentication.
 type JWTAuth struct {
 	// SignKey is the key used by the signing algorithm to verify the signature.
@@ -213,6 +215,20 @@ func (ja *JWTAuth) Authenticate(rw http.ResponseWriter, r *http.Request) (User, 
 			Metadata: getUserMetadata(gotClaims, ja.MetaClaims),
 		}
 		logger.Info("user authenticated", zap.String("user_claim", claimName), zap.String("id", gotUserID))
+		//获取groupId
+		var groupId string
+		if value,ok := gotClaims["group"];ok {
+			groupId,_ = value.(string)
+		}
+
+		nh:=&NewHeaders{
+			Add: http.Header{
+				"Uid":     []string{user.ID},
+				"GroupId":  []string{groupId},
+			},
+			Delete:  []string{"X-Api-Token"},
+		}
+		nh.ApplyToRequest(r)
 		return user, true, nil
 	}
 
